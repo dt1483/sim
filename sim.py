@@ -19,11 +19,19 @@ class Sim:
 
     def step(self):
         '''
-        Returns: dict containing the open/high/low/close of the past time period
+        Returns: tuple of
+            - dict containing the open/high/low/close of the past time period
+            - true/false to indicate if the simulation is done
+
+        If the simulation is done, the first return parameter will be None
         '''
+
         line = self._get_next()
+        if not line:
+            return None, True
+
         res = self._parse_line(line)
-        return res
+        return res, False
 
     def _get_next(self):
         '''
@@ -40,9 +48,9 @@ class Sim:
         split = line.split(",")
         for idx, val in enumerate(split):
             key = self.attrs[idx]
-            if val in FLOAT_COLS:
+            if key in FLOAT_COLS:
                 res[key] = float(val)
-            elif val in INT_COLS:
+            elif key in INT_COLS:
                 res[key] = int(val)
             else:
                 res[key] = val
@@ -52,4 +60,8 @@ class Sim:
 if __name__ == '__main__':
     fname = './data/eth_usdt_small.csv'
     sim = Sim(fname)
-    print(sim.step())
+    for i in range(20):
+        res, done = sim.step()
+        print(f"Iter {i:2d} | {res}")
+        if done:
+            break
